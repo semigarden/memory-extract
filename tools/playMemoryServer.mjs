@@ -1,5 +1,10 @@
 import http from "node:http";
 import path from "node:path";
+import {
+    createMemoryPlayIdleWatcher,
+    isMemoryPlayPingPath,
+    maybeInjectMemoryPlayLifecycle,
+} from "../src/memoryPlayLifecycle.js";
 import { guessMimeType } from "../src/payloadFormat.js";
 import {
     buildBrowseListingDocument,
@@ -67,10 +72,22 @@ const startHttpServer = async (handler) => {
     };
 };
 
-const serveManifestFile = (response, manifest, fileBytes, manifestPath) => {
-    const body = readMemoryFile(manifest, manifestPath, fileBytes);
+const serveManifestFile = (
+    response,
+    manifest,
+    fileBytes,
+    manifestPath,
+    options = {}
+) => {
+    const mime = guessMimeType(manifestPath);
+    const body = maybeInjectMemoryPlayLifecycle(
+        readMemoryFile(manifest, manifestPath, fileBytes),
+        mime,
+        options.injectLifecycle
+    );
+
     response.writeHead(200, {
-        "Content-Type": guessMimeType(manifestPath),
+        "Content-Type": mime,
     });
     response.end(body);
 };
@@ -78,14 +95,28 @@ const serveManifestFile = (response, manifest, fileBytes, manifestPath) => {
 const isHtmlEntryPath = (entryPath) =>
     entryPath.endsWith(".html") || entryPath.endsWith(".htm");
 
-export const createMemoryPlayHandler = (manifest, fileBytes, filePaths, entryPath) => {
+export const createMemoryPlayHandler = (
+    manifest,
+    fileBytes,
+    filePaths,
+    entryPath,
+    options = {}
+) => {
     const manifestPaths = filePaths ?? listManifestFiles(manifest);
     const mountPrefix = resolveEntryMountPrefix(entryPath);
+    const { idleWatcher } = options;
 
     return (request, response) => {
         try {
             const url = new URL(request.url ?? "/", "http://localhost");
             const urlPath = normalizeUrlPath(url.pathname);
+
+            if (isMemoryPlayPingPath(urlPath)) {
+                idleWatcher?.touch();
+                response.writeHead(204);
+                response.end();
+                return;
+            }
 
             if (mountPrefix) {
                 const mountRoot = `/${mountPrefix.replace(/\/$/, "")}`;
@@ -127,7 +158,9 @@ export const createMemoryPlayHandler = (manifest, fileBytes, filePaths, entryPat
                 return;
             }
 
-            serveManifestFile(response, manifest, fileBytes, manifestPath);
+            serveManifestFile(response, manifest, fileBytes, manifestPath, {
+                injectLifecycle: manifestPath === entryPath,
+            });
         } catch (error) {
             response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
             response.end(error.message ?? "Not found");
@@ -182,9 +215,47 @@ export const createMemoryBrowseHandler = (manifest, fileBytes, filePaths) => {
     };
 };
 
-export const startMemoryPlayServer = async (manifest, fileBytes, filePaths, entryPath) => {
-    const handler = createMemoryPlayHandler(manifest, fileBytes, filePaths, entryPath);
-    return startHttpServer(handler);
+export const startMemoryPlayServer = async (
+    manifest,
+    fileBytes,
+    filePaths,
+    entryPath,
+    options = {}
+) => {
+    const autoExit = options.autoExit ?? false;
+    let idleWatcher = null;
+    let resolveIdle = null;
+    const idlePromise = autoExit
+        ? new Promise((resolve) => {
+              resolveIdle = resolve;
+          })
+        : null;
+
+    if (autoExit) {
+        idleWatcher = createMemoryPlayIdleWatcher({
+            idleMs: options.idleMs ?? 45_000,
+            onIdle: () => {
+                idleWatcher?.stop();
+                resolveIdle?.();
+            },
+        });
+        idleWatcher.touch();
+    }
+
+    const handler = createMemoryPlayHandler(
+        manifest,
+        fileBytes,
+        filePaths,
+        entryPath,
+        { idleWatcher }
+    );
+    const serverInfo = await startHttpServer(handler);
+
+    return {
+        ...serverInfo,
+        idlePromise,
+        idleWatcher,
+    };
 };
 
 export const startMemoryBrowseServer = async (manifest, fileBytes, filePaths) => {
