@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { realpathSync } from "node:fs";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -12,6 +11,7 @@ import {
     startMemoryBrowseServer,
     startMemoryPlayServer,
 } from "./playMemoryServer.mjs";
+import { isPackagedMemoryExtract } from "./memoryExtractArgs.mjs";
 
 const MEMORY_PLAY_URL_PREFIX = "MEMORY_PLAY_URL=";
 const INTERNAL_ENV = "MEMORY_PLAY_INTERNAL";
@@ -30,17 +30,6 @@ export const resolvePlayEntry = (manifest, filePaths) => {
 };
 
 export { resolveMemoryPlayMode } from "./playMemory.mjs";
-
-export const isCliEntry = (entryArg = process.argv[1]) => {
-    try {
-        return (
-            realpathSync(entryArg) ===
-            realpathSync(fileURLToPath(import.meta.url))
-        );
-    } catch {
-        return false;
-    }
-};
 
 export const parsePlayArgv = (argv) => {
     const foreground = argv.includes("--foreground") || argv.includes("-f");
@@ -166,7 +155,9 @@ const readPlayUrlFromChild = (child) =>
     });
 
 const launchDetachedPlay = async (argv, projectPath) => {
-    const child = spawn(process.execPath, [PLAY_SCRIPT, ...argv], {
+    const packaged = isPackagedMemoryExtract();
+    const childArgs = packaged ? ["play", ...argv] : [PLAY_SCRIPT, ...argv];
+    const child = spawn(process.execPath, childArgs, {
         detached: true,
         stdio: ["ignore", "pipe", "pipe"],
         env: { ...process.env, [INTERNAL_ENV]: "1" },
@@ -316,9 +307,8 @@ const shouldDetachPlay = async (argv, projectPath) => {
     return playMode.mode === "play";
 };
 
-const main = async () => {
+export const runPlay = async (rawArgv) => {
     const projectPath = process.cwd();
-    const rawArgv = process.argv.slice(2);
     const internal = process.env[INTERNAL_ENV] === "1";
     const { foreground, argv } = parsePlayArgv(rawArgv);
 
@@ -331,12 +321,3 @@ const main = async () => {
     const input = resolvePlayInput(argv, projectPath);
     await playMemoryPng(input, label, { internal });
 };
-
-const isMain = isCliEntry();
-
-if (isMain) {
-    main().catch((error) => {
-        console.error(error.message ?? error);
-        process.exit(1);
-    });
-}

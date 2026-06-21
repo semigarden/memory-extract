@@ -24,8 +24,8 @@ const parseArgs = async (argv) => {
     return { input, explicitOut, host };
 };
 
-const main = async () => {
-    const { input, explicitOut, host } = await parseArgs(process.argv.slice(2));
+export const runUnpack = async (argv) => {
+    const { input, explicitOut, host } = await parseArgs(argv);
     const buffer = await readFile(input);
     const { manifest, fileBytes, version } = extractMemory(buffer);
     const outDir = resolveUnpackDir({
@@ -51,8 +51,3 @@ const main = async () => {
         `Extracted ${listManifestFiles(manifest).length} files to ${outDir} (format v${version})`
     );
 };
-
-main().catch((error) => {
-    console.error(error.message ?? error);
-    process.exit(1);
-});

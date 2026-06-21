@@ -3,7 +3,10 @@
   "description": "Tool for embedding data into PNG images",
   "license": "MIT",
   "version": "0.1.9",
-  "author": "semigarden",
+  "author": {
+    "name": "semigarden",
+    "url": "https://github.com/semigarden"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/semigarden/memory-extract.git"
@@ -21,13 +24,29 @@
     "./payload": "./src/payloadFormat.js"
   },
   "bin": {
-    "memory-pack": "./tools/pack.mjs",
-    "memory-unpack": "./tools/unpack.mjs",
-    "memory-play": "./tools/play.mjs"
+    "me": "./tools/memoryExtract.mjs"
   },
   "scripts": {
-    "pack": "node tools/pack.mjs",
-    "unpack": "node tools/unpack.mjs",
-    "play": "node tools/play.mjs"
+    "pack": "node tools/memoryExtract.mjs pack",
+    "unpack": "node tools/memoryExtract.mjs unpack",
+    "play": "node tools/memoryExtract.mjs play",
+    "build": "node tools/buildBinaries.mjs"
+  },
+  "pkg": {
+    "assets": [
+      "src/**/*",
+      "tools/**/*"
+    ],
+    "targets": [
+      "node22-linux-x64"
+    ],
+    "outputPath": "dist",
+    "sea": true
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.20.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true
   }
 }

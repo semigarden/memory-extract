@@ -226,8 +226,8 @@ const parseArgs = async (argv) => {
 
 const formatKb = (bytes) => `${(bytes / 1024).toFixed(1)} KB`;
 
-const main = async () => {
-    const options = await parseArgs(process.argv.slice(2));
+export const runPack = async (argv) => {
+    const options = await parseArgs(argv);
     const inputStat = await stat(options.input);
     const inputIsFile = inputStat.isFile();
     const identity = resolveInputIdentity(options.input, { isFile: inputIsFile });
@@ -288,8 +288,3 @@ const main = async () => {
     );
     console.log(`  cover: ${formatKb(cover.length)}, payload: ${formatKb(payload.length)}, format: v${version}`);
 };
-
-main().catch((error) => {
-    console.error(error.message ?? error);
-    process.exit(1);
-});

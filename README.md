@@ -10,14 +10,20 @@ npm install -g memory-extract
 
 ## CLI
 
-### `memory-pack [path] [filename]`
+```bash
+me pack [path] [filename] [options]
+me unpack <png> [out-dir]
+me play <png> [--foreground]
+```
+
+### `me pack`
 
 Pack a file or directory into a memory PNG
 
 ```bash
-memory-pack               # pack current directory → ./<folder-name>.png
-memory-pack dist          # pack ./dist → ./dist.png
-memory-pack dist App      # pack ./dist → ./App.png
+me pack               # pack current directory → ./<folder-name>.png
+me pack dist          # pack ./dist → ./dist.png
+me pack dist App      # pack ./dist → ./App.png
 ```
 
 
@@ -34,21 +40,22 @@ memory-pack dist App      # pack ./dist → ./App.png
 | `--out <path>`   | Output PNG path                              |
 
 
-### `memory-unpack <png> [out-dir]`
+### `me unpack`
 
 Extract the packed files from a memory PNG
 
 ```bash
-memory-unpack dist.png
-memory-unpack dist.png ./restored
+me unpack dist.png
+me unpack dist.png ./restored
 ```
 
-### `memory-play <png>`
+### `me play`
 
 Open a memory PNG in the browser
 
 ```bash
-memory-play App.png
+me play App.png
+me play App.png --foreground
 ```
 
 ## Library
