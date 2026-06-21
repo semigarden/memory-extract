@@ -5,7 +5,7 @@ Embed files into a PNG image and open them back from the PNG alone
 ## Install
 
 ```bash
-npm install memory-extract
+npm install -g memory-extract
 ```
 
 ## CLI
