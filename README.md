@@ -1,4 +1,4 @@
-# memory-extract
+# Memory Extract
 
 Embed files into a PNG image and open them back from the PNG alone
 
@@ -34,8 +34,6 @@ memory-pack dist App      # pack ./dist → ./App.png
 | `--out <path>`   | Output PNG path                              |
 
 
-
-
 ### `memory-unpack <png> [out-dir]`
 
 Extract the packed files from a memory PNG
@@ -44,8 +42,6 @@ Extract the packed files from a memory PNG
 memory-unpack dist.png
 memory-unpack dist.png ./restored
 ```
-
-
 
 ### `memory-play <png>`
 
@@ -68,8 +64,6 @@ import {
 } from "memory-extract";
 ```
 
-
-
 Node helpers
 
 ```js
@@ -78,4 +72,3 @@ import { guessMimeType, encodeV2Archive } from "memory-extract/payload";
 ```
 
 `createMemoryBlob()` is for in-browser launch via blob URLs and the CLI uses HTTP or `file://`
-
