@@ -13,9 +13,11 @@ import {
 } from "./playMemoryServer.mjs";
 import { isPackagedMemoryExtract } from "./memoryExtractArgs.mjs";
 
+const MEMORY_EXTRACT_SCRIPT = fileURLToPath(
+    new URL("./memoryExtract.mjs", import.meta.url)
+);
 const MEMORY_PLAY_URL_PREFIX = "MEMORY_PLAY_URL=";
 const INTERNAL_ENV = "MEMORY_PLAY_INTERNAL";
-const PLAY_SCRIPT = fileURLToPath(import.meta.url);
 
 export const resolvePlayEntry = (manifest, filePaths) => {
     if (filePaths.includes(manifest.entry)) {
@@ -156,7 +158,9 @@ const readPlayUrlFromChild = (child) =>
 
 const launchDetachedPlay = async (argv, projectPath) => {
     const packaged = isPackagedMemoryExtract();
-    const childArgs = packaged ? ["play", ...argv] : [PLAY_SCRIPT, ...argv];
+    const childArgs = packaged
+        ? ["play", ...argv]
+        : [MEMORY_EXTRACT_SCRIPT, "play", ...argv];
     const child = spawn(process.execPath, childArgs, {
         detached: true,
         stdio: ["ignore", "pipe", "pipe"],
