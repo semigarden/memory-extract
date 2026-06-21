@@ -40,7 +40,8 @@ export const parseMemoryExtractArgv = (argv = process.argv) => {
         return { subcommand: argv[start], args: argv.slice(start + 1) };
     }
 
-    if (path.basename(argv[1] ?? "") === "memoryExtract.mjs") {
+    const entryBase = path.basename(argv[1] ?? "");
+    if (entryBase === "memoryExtract.mjs" || entryBase === MEMORY_EXTRACT_BIN) {
         return { subcommand: argv[2], args: argv.slice(3) };
     }
 
