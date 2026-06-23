@@ -243,10 +243,10 @@ export const runPack = async (argv) => {
     let cover;
     if (options.cover) {
         cover = await readFile(options.cover);
-        console.log(`Using cover image ${options.cover}`);
+        // console.log(`Using cover image ${options.cover}`);
     } else {
         cover = createBlankCover();
-        console.log("Using blank cover image");
+        // console.log("Using blank cover image");
     }
 
     const skipPaths = buildSkipPaths(options);
@@ -283,8 +283,8 @@ export const runPack = async (argv) => {
     await writeFile(tempPath, memory);
     await rename(tempPath, options.out);
 
-    console.log(
-        `Packed ${Object.keys(files).length} files from ${options.input} into ${options.out} (${formatKb(memory.length)})`
-    );
-    console.log(`  cover: ${formatKb(cover.length)}, payload: ${formatKb(payload.length)}, format: v${version}`);
+    // console.log(
+    //     `Packed ${Object.keys(files).length} files from ${options.input} into ${options.out} (${formatKb(memory.length)})`
+    // );
+    // console.log(`  cover: ${formatKb(cover.length)}, payload: ${formatKb(payload.length)}, format: v${version}`);
 };
