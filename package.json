@@ -2,7 +2,7 @@
   "name": "memory-extract",
   "description": "Tool for embedding data into PNG images",
   "license": "MIT",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "author": {
     "name": "semigarden",
     "url": "https://github.com/semigarden"
@@ -21,7 +21,10 @@
   "exports": {
     ".": "./src/index.js",
     "./node": "./tools/memoryFormat.mjs",
-    "./payload": "./src/payloadFormat.js"
+    "./payload": "./src/payloadFormat.js",
+    "./play": "./src/memoryPlay.js",
+    "./play/lifecycle": "./src/memoryPlayLifecycle.js",
+    "./play/server": "./tools/playMemoryServer.mjs"
   },
   "bin": {
     "me": "./tools/memoryExtract.mjs"
